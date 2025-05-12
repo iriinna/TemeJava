@@ -1,0 +1,8 @@
+Andrei Popescu;35;Bucuresti
+Maria Ionescu;28;Cluj
+Ion Barbu;41;Brasov
+Elena Tudor;25;Timisoara
+George Enescu;60;Bacau
+Ana Ilie;33;Bucuresti
+Daniel Doru;19;Iasi
+Cristina Radu;38;Buzau

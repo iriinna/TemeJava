@@ -1,0 +1,28 @@
+Ana Ilie (33 ani) Bucuresti
+Andrei Popescu (35 ani) Bucuresti
+Cristina Radu (38 ani) Buzau
+George Enescu (60 ani) Bacau
+Ion Barbu (41 ani) Brasov
+Oras: Buzau
+  Cristina Radu (38 ani) Buzau
+Oras: Bucuresti
+  Andrei Popescu (35 ani) Bucuresti
+  Ana Ilie (33 ani) Bucuresti
+Oras: Bacau
+  George Enescu (60 ani) Bacau
+Oras: Iasi
+  Daniel Doru (19 ani) Iasi
+Oras: Brasov
+  Ion Barbu (41 ani) Brasov
+Oras: Cluj
+  Maria Ionescu (28 ani) Cluj
+Oras: Timisoara
+  Elena Tudor (25 ani) Timisoara
+Buzau: 38.00
+Bucuresti: 34.00
+Bacau: 60.00
+Iasi: 19.00
+Brasov: 41.00
+Cluj: 28.00
+Timisoara: 25.00
+George Enescu (60 ani) Bacau

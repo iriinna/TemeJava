@@ -1,0 +1,3 @@
+Produs3 - Pret: 30.00, Stoc: 0
+Produs6 - Pret: 60.00, Stoc: 0
+Produs9 - Pret: 90.00, Stoc: 0
