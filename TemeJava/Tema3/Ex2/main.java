@@ -1,126 +1,86 @@
 import java.io.*;
 import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import java.util.stream.*;
 
 public class main {
     public static void main(String[] args) {
         String fisier = "comenzi.dat";
 
+        //scriere
+        List<Comanda> comenziInitiale = IntStream.rangeClosed(1, 15)
+                .mapToObj(i -> new Comanda(i, "Client" + (i % 5), i * 1000.0, false))
+                .toList();
+
         try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(fisier))) {
-            for (int i = 1; i <= 15; i++) {
-                Comanda c = new Comanda(i, "Client" + (i % 5), i * 1000, false);
-                out.writeObject(c);
-            }
-        } catch (IOException e) {
-            System.err.println("Eroare la scrierea comenzilor: " + e.getMessage());
-        }
-
-        try (RandomAccessFile raf = new RandomAccessFile(fisier, "rw")) {
-            while (true) {
-                long pos = raf.getFilePointer();
-                Comanda comanda;
-                try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(fisier))) {
-                    while (true) {
-                        pos = raf.getFilePointer();
-                        comanda = (Comanda) ois.readObject();
-                        if (comanda.getValoare() > 5000 && !comanda.isFinalizata()) {
-                            comanda.setFinalizata(true);
-
-                            raf.seek(pos);
-                            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                            ObjectOutputStream tempOut = new ObjectOutputStream(bos);
-                            tempOut.writeObject(comanda);
-                            tempOut.flush();
-
-                            byte[] bytes = bos.toByteArray();
-                            raf.write(bytes);
-                        }
-                    }
-                } catch (EOFException e) {
-                    break;
-                } catch (ClassNotFoundException e) {
-                    System.err.println("Clasa Comanda nu a fost gasita: " + e.getMessage());
-                    break;
+            comenziInitiale.forEach(c -> {
+                try {
+                    out.writeObject(c);
+                } catch (IOException e) {
+                    System.err.println("Eroare la scriere: " + c);
                 }
-            }
-        } catch (IOException | SecurityException e) {
-            System.err.println("Eroare acces random: " + e.getMessage());
+            });
+        } catch (IOException e) {
+            System.err.println("Eroare generala la scriere: " + e.getMessage());
         }
 
+        //citire
         List<Comanda> comenzi = new ArrayList<>();
         try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(fisier))) {
-            while (true) {
-                try {
-                    Comanda c = (Comanda) in.readObject();
-                    comenzi.add(c);
-                } catch (EOFException e) {
-                    break;
-                }
-            }
-        } catch (IOException | ClassNotFoundException e) {
-            System.err.println("Eroare la citirea comenzilor: " + e.getMessage());
+            Stream.generate(() -> {
+                        try {
+                            return (Comanda) in.readObject();
+                        } catch (EOFException e) {
+                            return null;
+                        } catch (IOException | ClassNotFoundException e) {
+                            System.err.println("Eroare la citire: " + e.getMessage());
+                            return null;
+                        }
+                    })
+                    .takeWhile(Objects::nonNull)
+                    .forEach(comenzi::add);
+        } catch (IOException e) {
+            System.err.println("Eroare la deschiderea fisierului: " + e.getMessage());
         }
 
-        List<Comanda> finalizate = comenzi.stream()
+        List<Comanda> comenziModificate = comenzi.stream()
+                .map(c -> c.getValoare() > 5000 && !c.isFinalizata()
+                        ? new Comanda(c.getId(), c.getNumeClient(), c.getValoare(), true)
+                        : c)
+                .toList();
+
+        //rescriere fisier
+        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(fisier))) {
+            comenziModificate.forEach(c -> {
+                try {
+                    out.writeObject(c);
+                } catch (IOException e) {
+                    System.err.println("Eroare la scriere actualizata: " + e.getMessage());
+                }
+            });
+        } catch (IOException e) {
+            System.err.println("Eroare la rescriere: " + e.getMessage());
+        }
+
+        List<Comanda> finalizate = comenziModificate.stream()
                 .filter(Comanda::isFinalizata)
                 .toList();
 
-        double suma = finalizate.stream()
+        double sumaFinalizate = finalizate.stream()
                 .mapToDouble(Comanda::getValoare)
                 .sum();
 
-        Map<String, List<Comanda>> comenziPeClient = finalizate.stream()
+        Map<String, List<Comanda>> grupatePeClient = finalizate.stream()
                 .collect(Collectors.groupingBy(Comanda::getNumeClient));
 
         System.out.println("Comenzi finalizate:");
         finalizate.forEach(System.out::println);
 
-        System.out.println(suma);
+        System.out.printf("Suma: %.2f RON%n", sumaFinalizate);
 
-        comenziPeClient.forEach((client, lista) -> {
+        System.out.println("\nComenzi grupate pe client:");
+        grupatePeClient.forEach((client, lista) -> {
             System.out.println("Client: " + client);
             lista.forEach(c -> System.out.println("  " + c));
         });
-    }
-}
-
-class Comanda implements Serializable {
-    private int id;
-    private String numeClient;
-    private double valoare;
-    private boolean finalizata;
-
-    public Comanda(int id, String numeClient, double valoare, boolean finalizata) {
-        this.id = id;
-        this.numeClient = numeClient;
-        this.valoare = valoare;
-        this.finalizata = finalizata;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public String getNumeClient() {
-        return numeClient;
-    }
-
-    public double getValoare() {
-        return valoare;
-    }
-
-    public boolean isFinalizata() {
-        return finalizata;
-    }
-
-    public void setFinalizata(boolean finalizata) {
-        this.finalizata = finalizata;
-    }
-
-    @Override
-    public String toString() {
-        return String.format("Comanda:id=%d, client='%s', valoare=%.2f, finalizata=%b",
-                id, numeClient, valoare, finalizata);
     }
 }
