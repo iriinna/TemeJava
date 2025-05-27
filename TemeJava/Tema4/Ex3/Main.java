@@ -4,7 +4,6 @@ import java.util.concurrent.*;
 
 public class Main {
 
-    // CONFIG
     static final String DB_URL = "jdbc:postgresql://localhost:5432/temadb";
     static final String DB_USER = "postgres";
     static final String DB_PASSWORD = "15461";
@@ -27,17 +26,16 @@ public class Main {
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM Log")) {
             if (rs.next()) {
-                System.out.println("Total înregistrări în Log: " + rs.getInt(1));
+                System.out.println("Total inregistrari in Log: " + rs.getInt(1));
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
-        // Apelăm procedura stocată pentru curățare
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
              CallableStatement cs = conn.prepareCall("{call clean_old_logs()}")) {
             cs.execute();
-            System.out.println("Procedura clean_old_logs() a fost apelată.");
+            System.out.println("Procedura clean_old_logs() a fost apelata.");
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -46,7 +44,6 @@ public class Main {
     }
 }
 
-// === SIMPLE CONNECTION POOL ===
 class SimpleConnectionPool {
     private final List<Connection> availableConnections = new ArrayList<>();
 
@@ -85,7 +82,6 @@ class SimpleConnectionPool {
     }
 }
 
-// === WORKER THREAD ===
 class Worker implements Runnable {
     private final SimpleConnectionPool pool;
     private final int id;
